@@ -19,7 +19,7 @@ router.get("/:id", validateID, (req, res, next) => {
     .catch(next)
 });
 
-router.use((err, req, res, next) => {
+router.use((err, req, res, next) => { //eslint-disable-line
   res.status(err.status || 500).json({
     message: err.message,
     customMessage: "something went wrong in the recipes router",
