@@ -15,23 +15,16 @@ async function GetById(recipe_id) {
       "s.step_id",
       "s.step_number",
       "s.step_instructions",
-      "ri.ingredient_id",
-    //   "i.ingredient_name",
+      "i.ingredient_id",
+      "i.ingredient_name",
       "quantity"
     )
-    .orderBy("s.step_number")
+    .orderBy("s.step_number");
 
-    /*
-    select 
- r.*, step_id, step_number, step_instructions
- from recipes as r
- left join steps as s
-     on r.recipe_id = s.recipe_id
- where r.recipe_id = 3
- 
- 
- order by step_number
-     */
+  const iRows = await db("recipe_ingredients as ri")
+    .leftJoin("ingredients as i", "ri.ingredient_id", "i.ingredient_id")
+    .select("ri.ingredient_id", "i.ingredient_name", "quantity", "ri.step_id")
+    .where("ri.recipe_id", recipe_id);
 
   const result = {
     recipe_id: rows[0].recipe_id,
@@ -40,15 +33,25 @@ async function GetById(recipe_id) {
     steps: [],
   };
 
-  console.log("say something", rows);
-
   rows.forEach((row) => {
-    result.steps.push({
+    const step = {
       step_id: row.step_id,
       step_number: row.step_number,
       step_instructions: row.step_instructions,
       ingredients: [],
-    });
+    };
+
+    result.steps.push(step);
+
+    for (let i = 0; i < result.steps.length; i++) {
+        if (iRows[i] && row.step_id === iRows[i].step_id) {
+          step.ingredients.push({
+            ingredient_id: iRows[i].ingredient_id,
+            ingredient_name: iRows[i].ingredient_name,
+            quantity: iRows[i].quantity,
+          });
+        }
+      }
   });
 
   return result;
